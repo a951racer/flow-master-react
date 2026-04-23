@@ -42,33 +42,33 @@ Browser
 Heroku Dyno (web)
   └── Node.js process  (server.js)
         ├── Express middleware: HTTPS redirect
-        ├── Express middleware: serve-static  →  /build/**
+        ├── Express middleware: serve-static  →  /dist/**
         └── Express catch-all: serve index.html  (SPA fallback)
 ```
-
-The React build output (`/build`) is committed to the repository (or produced by the Heroku build step via `heroku-postbuild`). The Express server is the only process that runs at runtime — it never proxies to the API; the browser calls the API directly.
 
 ### Directory Structure
 
 ```
 flow-master-react/
 ├── public/
-│   ├── logo.png          # Flow Master logo (used in navbar)
+│   ├── logo.png          # Navbar logo (86x86px)
+│   ├── login-logo.png    # Login panel logo (full panel width)
+│   ├── login-bg.png      # Login page background image
 │   └── favicon.png       # Browser tab icon
 ├── src/
-│   ├── api/              # Axios instance + per-resource query hooks
+│   ├── api/
 │   │   ├── client.ts     # Configured Axios instance
 │   │   ├── auth.ts       # login() function
 │   │   ├── periods.ts    # useActivePeriods, useCurrentPeriod, useGeneratePeriods
-│   │   ├── incomes.ts    # useUpcomingIncomes
-│   │   ├── expenses.ts   # useUpcomingExpenses
-│   │   └── admin.ts      # useExpenseCategories, usePaymentSources, useUsers
+│   │   ├── incomes.ts    # useAllIncomes, useUpcomingIncomes, useCreateIncome, useUpdateIncome, useDeleteIncome
+│   │   ├── expenses.ts   # useAllExpenses, useUpcomingExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense
+│   │   └── admin.ts      # useExpenseCategories, usePaymentSources, useUsers + mutations
 │   ├── store/
-│   │   ├── authStore.ts  # Zustand: token, setToken, clearToken
-│   │   └── notificationStore.ts  # Zustand: notifications queue
+│   │   ├── authStore.ts
+│   │   └── notificationStore.ts
 │   ├── components/
 │   │   ├── layout/
-│   │   │   ├── AppShell.tsx      # Nav + <Outlet>
+│   │   │   ├── AppShell.tsx
 │   │   │   └── NavBar.tsx
 │   │   ├── common/
 │   │   │   ├── NotificationBanner.tsx
@@ -80,16 +80,18 @@ flow-master-react/
 │   │   ├── LoginPage.tsx
 │   │   ├── DashboardPage.tsx
 │   │   ├── PeriodsPage.tsx
+│   │   ├── ExpensesPage.tsx
+│   │   ├── IncomePage.tsx
 │   │   └── AdminPage.tsx
 │   ├── utils/
-│   │   └── dateUtils.ts  # formatDate, isWithinNextDays
+│   │   └── dateUtils.ts
 │   ├── types/
-│   │   └── index.ts      # Shared TypeScript interfaces
-│   ├── App.tsx           # Router definition
-│   └── main.tsx          # Entry point, QueryClient, Zustand provider
-├── server.js             # Express static server for Heroku
+│   │   └── index.ts
+│   ├── App.tsx
+│   └── main.tsx
+├── server.js
 ├── scripts/
-│   └── check-env.js      # Build-time env var validation
+│   └── check-env.js
 ├── package.json
 └── vite.config.ts
 ```
@@ -103,12 +105,14 @@ flow-master-react/
 ```
 <BrowserRouter>
   <Routes>
-    <Route path="/login" element={<LoginPage />} />
-    <Route element={<ProtectedRoute />}>          ← checks auth, redirects if not
-      <Route element={<AppShell />}>              ← persistent nav + outlet
-        <Route path="/"        element={<DashboardPage />} />
-        <Route path="/periods" element={<PeriodsPage />} />
-        <Route path="/admin"   element={<AdminPage />} />
+    <Route path="/login"    element={<LoginPage />} />
+    <Route element={<ProtectedRoute />}>
+      <Route element={<AppShell />}>
+        <Route path="/"         element={<DashboardPage />} />
+        <Route path="/periods"  element={<PeriodsPage />} />
+        <Route path="/expenses" element={<ExpensesPage />} />
+        <Route path="/income"   element={<IncomePage />} />
+        <Route path="/admin"    element={<AdminPage />} />
       </Route>
     </Route>
     <Route path="*" element={<Navigate to="/" />} />
@@ -116,133 +120,120 @@ flow-master-react/
 </BrowserRouter>
 ```
 
-### `ProtectedRoute`
-
-Reads the token from Zustand auth store. If no token is present, renders `<Navigate to="/login" replace />`. Otherwise renders `<Outlet />`.
-
-```typescript
-const ProtectedRoute: React.FC = () => {
-  const token = useAuthStore(s => s.token);
-  return token ? <Outlet /> : <Navigate to="/login" replace />;
-};
-```
-
 ### `AppShell`
 
-Renders `<NavBar />` and `<Outlet />`. Also renders `<NotificationBanner />` at a fixed position so notifications appear consistently across all screens.
+Renders `<NavBar />`, `<NotificationBanner />`, and `<Outlet />`. The main content area uses `w-full` with no container constraint — width is controlled by `#root` in `index.css` (75% of browser window, centered).
 
 ### `NavBar`
 
-- Logo: Displays the Flow Master logo (86x86px) on the left side of the navigation bar with `object-contain` to maintain aspect ratio
-- Links: Dashboard (`/`), Periods (`/periods`), Admin (`/admin`)
-- Uses `useMatch` / `NavLink` `isActive` to highlight the active route
-- Logout button calls `authStore.clearToken()` then `navigate('/login')`
-- Compact vertical padding (`py-1`) to minimize nav bar height while accommodating the logo
-
-### `NotificationBanner`
-
-- Reads from `notificationStore`
-- Renders each notification with a dismiss (`×`) button
-- Fixed position (e.g., top-right corner) on all authenticated screens
+- Background color: `#0F2E5D` (dark navy)
+- Logo: `logo.png` at 86x86px with `object-contain`, left side
+- Links (left to right): Dashboard (`/`), Flow (`/periods`), Expenses (`/expenses`), Income (`/income`), Admin (`/admin`)
+- Active link highlighted in blue; inactive links in gray
+- Logout button: `#5FA343` (green), calls `authStore.clearToken()` then navigates to `/login`
+- Compact vertical padding (`py-1`) to minimize height
 
 ### `LoginPage`
 
-- Controlled form: `username`, `password`
-- On submit: calls `login(username, password)` from `api/auth.ts`
-- On success: stores token via `authStore.setToken(token)`, navigates to `/`
-- On error: adds notification via `notificationStore.add(message)`, preserves username
-- Disables submit button while request is in-flight (tracked with local `useState`)
+- Full browser window (`fixed inset-0`) with `login-bg.png` as background
+- Floating white panel on the right side (`w-96`, rounded, shadow, `pr-16` from edge)
+- Panel contains: `login-logo.png` (full panel width), tagline, email + password fields with icons, "Log In" button
+- On success: stores token, navigates to `/`
+- On error: adds notification, preserves email field
 
 ### `DashboardPage`
 
-- Calls `useCurrentPeriod()`, `useUpcomingIncomes()`, `useUpcomingExpenses()` — all run concurrently (TanStack Query fires them in parallel by default)
-- Shows `<LoadingSpinner />` per section while `isLoading`
-- Shows notification on query error (via `onError` / `useEffect` on `isError`)
-- "Create Periods" button opens `<CreatePeriodsModal />`
+- "Create Periods" button: `#2F6FB5`
+- Three sections: Current Period, Upcoming Incomes (next 3 days), Upcoming Expenses (next 3 days)
+- Client-side filtering for upcoming items
 
-### `CreatePeriodsModal`
+### `PeriodsPage` (titled "Flow")
 
-- Local state: `count` (number, 1–12), `isOpen`
-- Validates `count` is integer in [1, 12] before enabling submit
-- On submit: calls `useGeneratePeriods` mutation
-- Disables submit while mutation is pending
-- On success: closes modal, invalidates Dashboard queries
-- On error: shows notification inside modal, keeps modal open
+- Horizontally scrollable period columns
+- Each `PeriodColumn`: date range header, income/expense summary, sorted income list, sorted expense list
+- Each income/expense row: name | day of month | amount (horizontal layout)
 
-### `PeriodsPage`
+### `ExpensesPage`
 
-- Calls `useActivePeriods()` which returns periods with nested incomes and expenses
-- Renders a horizontally scrollable container (`overflow-x: auto`)
-- Each period is a fixed-width column (`PeriodColumn` component)
-- Columns ordered by `startDate` ascending (sort client-side)
+- Full-width table with columns: Payee, Type, Category, Payment Source, Amount, Day, Required, Inactive, Actions
+- "Show inactive" checkbox toggle (default: active only)
+- Inactive rows visually dimmed (`opacity-50`)
+- "+ Add Expense" button (green `#5FA343`) inserts inline form row at top of table
+- Edit button (`#2F6FB5`) replaces row with inline form
+- Delete button (red) with confirmation dialog
+- Sorted alphabetically by payee
 
-### `PeriodColumn`
+### `IncomePage`
 
-- Props: `period: Period` (with `incomes: Income[]`, `expenses: Expense[]`)
-- Header: date range
-- Summary section: total income, total expenses, difference (computed client-side)
-- Income list: sorted ascending by `dayOfMonth`, displays name, day of month, and amount in horizontal layout
-- Expense list: sorted ascending by `dayOfMonth`, displays name, day of month, and amount in horizontal layout
+- Full-width table with columns: Source, Amount, Day, Paycheck, Inactive, Actions
+- "Show inactive" checkbox toggle (default: active only)
+- Inactive rows visually dimmed
+- "+ Add Income" button (green) inserts inline form row
+- Edit (`#2F6FB5`) and Delete (red) per row with same patterns as ExpensesPage
+- Sorted alphabetically by source
 
-### `AdminPage`
+### `AdminPage` (titled "Admin")
 
 - Three sections: Expense Categories, Payment Sources, Users
-- Each section uses an inline-edit table pattern:
-  - Display mode: read-only row with name (left-aligned) and action buttons (right-aligned)
-  - Edit mode: input fields + Save/Cancel buttons
-  - On save: fires mutation; on success updates cache; on error shows notification and reverts to previous value (optimistic update with rollback via TanStack Query's `onMutate`/`onError` pattern)
-- Create functionality: input field and "Add" button below each table (Expense Categories and Payment Sources only)
-- Delete functionality: red "Delete" button with confirmation dialog for each row (Expense Categories and Payment Sources only)
-- Rows sorted alphabetically by name using case-insensitive `localeCompare`
-- Users table: read-only display fetched from `GET /users`, columns: First Name, Last Name, Email, sorted by last name then first name. No create/edit/delete (backend only exposes a read endpoint)
+- Expense Categories and Payment Sources: inline-edit table with create (Add button) and delete (confirmation dialog)
+- Users: read-only table, columns: First Name, Last Name, Email — fetched from `GET /users`
+- All tables sorted alphabetically; name columns left-aligned, action buttons right-aligned
 
 ---
 
 ## Data Models
 
 ```typescript
-// types/index.ts
-
 export interface AuthResponse {
   token: string;
 }
 
 export interface Period {
-  id: number;
-  startDate: string;   // ISO 8601 date string
+  id: string;
+  startDate: string;
   endDate: string;
   incomes?: Income[];
   expenses?: Expense[];
 }
 
 export interface Income {
-  id: number;
-  name: string;
+  id: string;
+  name: string;        // mapped from source
+  source: string;
   amount: number;
-  scheduledDate: string;  // ISO 8601
+  scheduledDate: string;
   dayOfMonth: number;
-  periodId: number;
+  periodId?: string;
+  isPaycheck: boolean;
+  inactive: boolean;
+  inactiveDate?: string;
 }
 
 export interface Expense {
-  id: number;
-  name: string;
+  id: string;
+  name: string;        // mapped from payee
+  payee: string;
   amount: number;
-  dueDate: string;        // ISO 8601
+  dueDate: string;
   dayOfMonth: number;
-  periodId: number;
-  categoryId?: number;
-  paymentSourceId?: number;
+  periodId?: string;
+  categoryId: string;
+  paymentSourceId: string;
+  type: 'expense' | 'debt' | 'bill';
+  payeeUrl?: string;
+  required: boolean;
+  inactive: boolean;
+  inactiveDate?: string;
 }
 
 export interface ExpenseCategory {
-  id: number;
-  name: string;
+  id: string;
+  name: string;        // mapped from category
 }
 
 export interface PaymentSource {
-  id: number;
-  name: string;
+  id: string;
+  name: string;        // mapped from source
 }
 
 export interface User {
@@ -253,10 +244,20 @@ export interface User {
 }
 
 export interface Notification {
-  id: string;           // uuid
+  id: string;
   message: string;
 }
 ```
+
+### MongoDB Field Mappings
+
+| Model | Backend field | Frontend field |
+|---|---|---|
+| All | `_id` | `id` |
+| Income | `source` | `name` / `source` |
+| Expense | `payee` | `name` / `payee` |
+| ExpenseCategory | `category` | `name` |
+| PaymentSource | `source` | `name` |
 
 ---
 
@@ -264,139 +265,88 @@ export interface Notification {
 
 ### Axios Instance (`api/client.ts`)
 
-```typescript
-import axios from 'axios';
-import { useAuthStore } from '../store/authStore';
-
-const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
-});
-
-// Request interceptor: attach Bearer token
-apiClient.interceptors.request.use(config => {
-  const token = useAuthStore.getState().token;
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// Response interceptor: handle 401
-apiClient.interceptors.response.use(
-  response => response,
-  error => {
-    if (error.response?.status === 401) {
-      useAuthStore.getState().clearToken();
-      window.location.replace('/login');
-    }
-    return Promise.reject(error);
-  }
-);
-
-export default apiClient;
-```
-
-> Note: `useAuthStore.getState()` is used outside React components — this is the Zustand pattern for accessing store state in non-component contexts (interceptors, utilities).
+- `baseURL`: `import.meta.env.VITE_API_BASE_URL`
+- Request interceptor: attaches `Authorization: Bearer <token>`
+- Response interceptor: on 401, clears token and redirects to `/login`
 
 ### Query Keys
 
-All query keys are centralised to avoid typos and enable targeted invalidation:
-
 ```typescript
 export const queryKeys = {
-  currentPeriod:    ['currentPeriod'] as const,
-  activePeriods:    ['activePeriods'] as const,
-  upcomingIncomes:  ['upcomingIncomes'] as const,
-  upcomingExpenses: ['upcomingExpenses'] as const,
-  expenseCategories: ['expenseCategories'] as const,
-  paymentSources:   ['paymentSources'] as const,
-  users:            ['users'] as const,
+  currentPeriod:     ['currentPeriod'],
+  activePeriods:     ['activePeriods'],
+  upcomingIncomes:   ['upcomingIncomes'],
+  upcomingExpenses:  ['upcomingExpenses'],
+  expenseCategories: ['expenseCategories'],
+  paymentSources:    ['paymentSources'],
+  users:             ['users'],
 };
+
+// Additional keys defined locally in each API module:
+const incomeQueryKey  = ['allIncomes'];
+const expenseQueryKey = ['allExpenses'];
 ```
 
-### TanStack Query Configuration
+### API Hooks Summary
 
-```typescript
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000,   // 5 minutes — avoids redundant refetches on navigation
-      retry: 1,
-    },
-  },
-});
-```
-
-The `staleTime` of 5 minutes satisfies Requirement 14.3: navigating between screens within a session will serve cached data rather than re-fetching.
-
-### Error Notification Integration
-
-Each page uses a `useEffect` watching `isError` from TanStack Query hooks to push notifications into the Zustand notification store:
-
-```typescript
-useEffect(() => {
-  if (isError) {
-    notificationStore.add(error?.message ?? 'Failed to load data');
-  }
-}, [isError]);
-```
-
----
-
-## State Management
-
-### Auth Store (Zustand)
-
-```typescript
-interface AuthState {
-  token: string | null;
-  setToken: (token: string) => void;
-  clearToken: () => void;
-}
-
-const useAuthStore = create<AuthState>()(
-  persist(
-    set => ({
-      token: null,
-      setToken: token => set({ token }),
-      clearToken: () => set({ token: null }),
-    }),
-    { name: 'auth-token', storage: createJSONStorage(() => localStorage) }
-  )
-);
-```
-
-The `persist` middleware stores the token in `localStorage`, satisfying the requirement that the JWT persists across page refreshes.
-
-### Notification Store (Zustand)
-
-```typescript
-interface NotificationState {
-  notifications: Notification[];
-  add: (message: string) => void;
-  dismiss: (id: string) => void;
-}
-```
-
-Notifications are ephemeral — they are not persisted. The `NotificationBanner` component subscribes to this store and renders all active notifications.
-
-### Server State (TanStack Query)
-
-All API data (periods, incomes, expenses, admin entities) lives in the TanStack Query cache. Components access data via custom hooks (`useCurrentPeriod`, `useActivePeriods`, etc.) that wrap `useQuery` / `useMutation`. This eliminates prop-drilling for server data — any component can call the hook directly.
+| Hook | Method | Endpoint |
+|---|---|---|
+| `useCurrentPeriod` | GET | `periods` (client-side filter) |
+| `useActivePeriods` | GET | `periods` (client-side filter) |
+| `useGeneratePeriods` | POST | `periods/generate/:count` |
+| `useAllIncomes` | GET | `incomes` |
+| `useUpcomingIncomes` | GET | `incomes` (client-side filter) |
+| `useCreateIncome` | POST | `incomes` |
+| `useUpdateIncome` | PUT | `incomes/:id` |
+| `useDeleteIncome` | DELETE | `incomes/:id` |
+| `useAllExpenses` | GET | `expenses` |
+| `useUpcomingExpenses` | GET | `expenses` (client-side filter) |
+| `useCreateExpense` | POST | `expenses` |
+| `useUpdateExpense` | PUT | `expenses/:id` |
+| `useDeleteExpense` | DELETE | `expenses/:id` |
+| `useExpenseCategories` | GET | `expense-categories` |
+| `useCreateExpenseCategory` | POST | `expense-categories` |
+| `useUpdateExpenseCategory` | PUT | `expense-categories/:id` |
+| `useDeleteExpenseCategory` | DELETE | `expense-categories/:id` |
+| `usePaymentSources` | GET | `payment-sources` |
+| `useCreatePaymentSource` | POST | `payment-sources` |
+| `useUpdatePaymentSource` | PUT | `payment-sources/:id` |
+| `useDeletePaymentSource` | DELETE | `payment-sources/:id` |
+| `useUsers` | GET | `users` |
 
 ---
 
 ## Routing Structure
 
-| Path | Component | Auth Required |
-|---|---|---|
-| `/login` | `LoginPage` | No |
-| `/` | `DashboardPage` | Yes |
-| `/periods` | `PeriodsPage` | Yes |
-| `/admin` | `AdminPage` | Yes |
-| `*` | Redirect to `/` | — |
+| Path | Component | Title | Auth Required |
+|---|---|---|---|
+| `/login` | `LoginPage` | — | No |
+| `/` | `DashboardPage` | Dashboard | Yes |
+| `/periods` | `PeriodsPage` | Flow | Yes |
+| `/expenses` | `ExpensesPage` | Expenses | Yes |
+| `/income` | `IncomePage` | Income | Yes |
+| `/admin` | `AdminPage` | Admin | Yes |
+| `*` | Redirect to `/` | — | — |
 
-Protected routes are wrapped in `<ProtectedRoute>` which checks the Zustand auth store. Unauthenticated access to any protected route redirects to `/login`.
+---
+
+## Visual Design
+
+### Color Palette
+
+| Element | Color |
+|---|---|
+| NavBar background | `#0F2E5D` |
+| Logout button | `#5FA343` |
+| Edit buttons | `#2F6FB5` |
+| Add/Create buttons | `#5FA343` |
+| Login button | `#3B82F6` (blue-500) |
+
+### Layout
+
+- `#root` width: 75% of browser window, centered (`margin: 0 auto`)
+- Login page: full browser window (`fixed inset-0`), background image, floating right-side panel
+- All other pages: full width within `#root`, no additional max-width container
 
 ---
 
@@ -404,301 +354,79 @@ Protected routes are wrapped in `<ProtectedRoute>` which checks the Zustand auth
 
 | Scenario | Handling |
 |---|---|
-| Login API error | Notification on LoginPage; username field preserved |
+| Login API error | Notification; email field preserved |
 | 401 on any request | Axios interceptor clears token, redirects to `/login` |
-| Dashboard fetch failure | Notification per failed query; other sections still render |
+| Dashboard fetch failure | Notification per failed query |
 | Generate periods failure | Notification inside modal; modal stays open |
-| Admin update failure | Notification; TanStack Query `onError` rolls back optimistic update |
-| Missing `VITE_API_BASE_URL` at build | `scripts/check-env.js` fails the build with a descriptive message |
-
-All user-visible errors flow through the Zustand notification store and are rendered by `NotificationBanner`. Every notification includes a dismiss button.
-
----
-
-## Heroku Deployment
-
-### `server.js`
-
-```javascript
-const express = require('express');
-const path = require('path');
-const app = express();
-
-// HTTPS redirect
-app.use((req, res, next) => {
-  if (req.headers['x-forwarded-proto'] !== 'https' && process.env.NODE_ENV === 'production') {
-    return res.redirect(301, 'https://' + req.headers.host + req.url);
-  }
-  next();
-});
-
-// Serve static build output
-app.use(express.static(path.join(__dirname, 'build')));
-
-// SPA fallback — serve index.html for all non-asset routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server listening on port ${PORT}`));
-```
-
-### `scripts/check-env.js`
-
-```javascript
-const required = ['VITE_API_BASE_URL'];
-const missing = required.filter(k => !process.env[k]);
-if (missing.length) {
-  console.error(`Build failed: missing required environment variables: ${missing.join(', ')}`);
-  process.exit(1);
-}
-```
-
-Called from `package.json`:
-
-```json
-{
-  "scripts": {
-    "prebuild": "node scripts/check-env.js",
-    "build": "vite build",
-    "start": "node server.js",
-    "heroku-postbuild": "npm run build"
-  }
-}
-```
-
-### Required Heroku Config Vars
-
-| Variable | Purpose |
-|---|---|
-| `VITE_API_BASE_URL` | Base URL of the REST API (e.g., `https://api.flowmaster.example.com`) |
-| `NODE_ENV` | Set to `production` to enable HTTPS redirect |
+| Admin update failure | Notification; optimistic update rolled back |
+| Expense/Income CRUD failure | Notification displayed |
+| Missing `VITE_API_BASE_URL` at build | `scripts/check-env.js` fails build |
 
 ---
 
 ## Correctness Properties
 
-*A property is a characteristic or behavior that should hold true across all valid executions of a system — essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees.*
-
 ### Property 1: Bearer token present on all authenticated requests
-
-*For any* API request made while a JWT token is stored in the auth store, the outgoing HTTP request SHALL include an `Authorization: Bearer <token>` header.
-
-**Validates: Requirements 1.6**
-
----
+*For any* API request made while a JWT token is stored, the outgoing HTTP request SHALL include `Authorization: Bearer <token>`.
 
 ### Property 2: Unauthenticated navigation always redirects to login
-
-*For any* route path attempted by a user with no token in the auth store, the rendered output SHALL be a redirect to `/login`.
-
-**Validates: Requirements 2.1**
-
----
+*For any* protected route attempted without a token, the rendered output SHALL redirect to `/login`.
 
 ### Property 3: 401 response always clears token
-
-*For any* API response with HTTP status 401, the auth store token SHALL be `null` after the response is processed.
-
-**Validates: Requirements 2.2**
-
----
+*For any* API response with HTTP status 401, the auth store token SHALL be `null` after processing.
 
 ### Property 4: Dashboard fetch failure always produces a notification
-
-*For any* combination of failed fetches among `currentPeriod`, `upcomingIncomes`, and `upcomingExpenses`, at least one notification SHALL be present in the notification store describing the failure.
-
-**Validates: Requirements 3.5**
-
----
+*For any* failed fetch among `currentPeriod`, `upcomingIncomes`, `upcomingExpenses`, at least one notification SHALL be present.
 
 ### Property 5: Period date formatting
-
-*For any* `Period` with valid ISO 8601 `startDate` and `endDate` strings, the formatted output SHALL match the pattern `MMM D, YYYY` (e.g., "Jan 5, 2025").
-
-**Validates: Requirements 4.1**
-
----
+*For any* `Period` with valid ISO 8601 dates, formatted output SHALL match `MMM D, YYYY`.
 
 ### Property 6: Upcoming income filter correctness
-
-*For any* list of `Income` objects with varying `scheduledDate` values, the filtered result SHALL contain exactly those incomes whose `scheduledDate` falls within the range [today, today + 3 days] inclusive, and SHALL exclude all others.
-
-**Validates: Requirements 5.1**
-
----
+*For any* `Income[]`, filtered result SHALL contain exactly those with `scheduledDate` in [today, today+3].
 
 ### Property 7: Upcoming expense filter correctness
+*For any* `Expense[]`, filtered result SHALL contain exactly those with `dueDate` in [today, today+3].
 
-*For any* list of `Expense` objects with varying `dueDate` values, the filtered result SHALL contain exactly those expenses whose `dueDate` falls within the range [today, today + 3 days] inclusive, and SHALL exclude all others.
+### Property 8: Active-only filter correctness (Expenses/Income pages)
+*For any* list of expenses or incomes, when "Show inactive" is unchecked, the rendered list SHALL contain only items where `inactive === false`.
 
-**Validates: Requirements 5.2**
+### Property 9: Period column ordering
+*For any* `Period[]`, rendered columns SHALL be in ascending `startDate` order.
 
----
+### Property 10: Period summary calculation correctness
+*For any* `Period`, displayed summary SHALL satisfy `totalIncome = Σ(income.amount)`, `totalExpenses = Σ(expense.amount)`, `difference = totalIncome - totalExpenses`.
 
-### Property 8: Income entry rendering completeness
+### Property 11: Income list sort order within period
+*For any* `Period`, rendered income list SHALL be sorted ascending by `dayOfMonth`.
 
-*For any* `Income` object, the rendered component output SHALL contain both the income's `name` and its `scheduledDate`.
+### Property 12: Expense list sort order within period
+*For any* `Period`, rendered expense list SHALL be sorted ascending by `dayOfMonth`.
 
-**Validates: Requirements 5.5**
+### Property 13: Period income entry rendering completeness
+*For any* `Income` in a `PeriodColumn`, rendered output SHALL contain `name`, `dayOfMonth`, and `amount`.
 
----
+### Property 14: Period expense entry rendering completeness
+*For any* `Expense` in a `PeriodColumn`, rendered output SHALL contain `name`, `dayOfMonth`, and `amount`.
 
-### Property 9: Expense entry rendering completeness (Dashboard)
+### Property 15: Admin update failure rolls back UI state
+*For any* failed admin mutation, displayed value SHALL revert to pre-edit value and a notification SHALL be present.
 
-*For any* `Expense` object rendered on the Dashboard, the rendered component output SHALL contain both the expense's `name` and its `dueDate`.
+### Property 16: Active route navigation link is highlighted
+*For any* authenticated route, the corresponding NavBar link SHALL have active style; all others SHALL NOT.
 
-**Validates: Requirements 5.6**
+### Property 17: Session data caching prevents redundant fetches
+*For any* query fetched within `staleTime`, navigating away and back SHALL NOT trigger a new network request.
 
----
+### Property 18: Every failed API request produces a notification
+*For any* failed API request, at least one notification SHALL be added with a non-empty message.
 
-### Property 10: Period modal input validation
-
-*For any* integer value `n`, the `CreatePeriodsModal` input validation SHALL accept `n` if and only if `1 ≤ n ≤ 12`. For any value outside this range (including non-integers), the Submit button SHALL remain disabled.
-
-**Validates: Requirements 6.8**
-
----
-
-### Property 11: Period column ordering
-
-*For any* list of `Period` objects with varying `startDate` values, the rendered `PeriodsPage` SHALL display the period columns in ascending `startDate` order (oldest leftmost, newest rightmost).
-
-**Validates: Requirements 7.3**
-
----
-
-### Property 12: Period summary calculation correctness
-
-*For any* `Period` with associated `Income[]` and `Expense[]` arrays, the displayed summary values SHALL satisfy:
-- `totalIncome = sum(income.amount for income in incomes)`
-- `totalExpenses = sum(expense.amount for expense in expenses)`
-- `difference = totalIncome - totalExpenses`
-
-**Validates: Requirements 8.1**
-
----
-
-### Property 13: Income list sort order within period
-
-*For any* `Period` with associated `Income[]`, the rendered income list SHALL be sorted in ascending order by `dayOfMonth`.
-
-**Validates: Requirements 9.1**
-
----
-
-### Property 14: Expense list sort order within period
-
-*For any* `Period` with associated `Expense[]`, the rendered expense list SHALL be sorted in ascending order by `dayOfMonth`.
-
-**Validates: Requirements 9.2**
-
----
-
-### Property 15: Period income entry rendering completeness
-
-*For any* `Income` object rendered in a `PeriodColumn`, the rendered output SHALL contain the income's `name`, `dayOfMonth`, and `amount` in a horizontal layout.
-
-**Validates: Requirements 9.3**
-
----
-
-### Property 16: Period expense entry rendering completeness
-
-*For any* `Expense` object rendered in a `PeriodColumn`, the rendered output SHALL contain the expense's `name`, `dayOfMonth`, and `amount` in a horizontal layout.
-
-**Validates: Requirements 9.4**
-
----
-
-### Property 17: Admin update failure rolls back UI state
-
-*For any* admin entity (ExpenseCategory, PaymentSource, or User) whose update mutation fails, the displayed value in the UI SHALL revert to the value it held before the edit was initiated, and a notification SHALL be present in the notification store.
-
-**Validates: Requirements 10.5, 11.4, 12.4**
-
----
-
-### Property 18: Active route navigation link is highlighted
-
-*For any* authenticated route the user navigates to, the `NavBar` SHALL render the corresponding navigation link with its active style applied, and all other links SHALL NOT have the active style applied.
-
-**Validates: Requirements 13.2**
-
----
-
-### Property 19: Session data caching prevents redundant fetches
-
-*For any* query that has been successfully fetched within the current session (within `staleTime`), navigating away from and back to the same screen SHALL NOT trigger a new network request for that query.
-
-**Validates: Requirements 14.3**
-
----
-
-### Property 20: Every failed API request produces a notification
-
-*For any* failed API request (network error or non-2xx response), at least one notification SHALL be added to the notification store with a non-empty human-readable message.
-
-**Validates: Requirements 15.1, 15.2**
-
----
-
-### Property 21: Every notification has a dismiss mechanism
-
-*For any* notification rendered by `NotificationBanner`, the rendered output SHALL include a dismiss control (button or equivalent interactive element).
-
-**Validates: Requirements 15.3**
-
----
-
-### Property 22: Notification location is consistent across screens
-
-*For any* authenticated route, the `NotificationBanner` SHALL be rendered at the same DOM position (fixed top-right) regardless of which screen is active.
-
-**Validates: Requirements 15.4**
+### Property 19: Every notification has a dismiss mechanism
+*For any* rendered notification, the output SHALL include a dismiss control.
 
 ---
 
 ## Testing Strategy
 
-### Dual Testing Approach
-
-Unit/component tests verify specific examples, edge cases, and integration points. Property-based tests verify universal properties across many generated inputs. Both are necessary for comprehensive coverage.
-
-### Property-Based Testing
-
-**Library**: [fast-check](https://fast-check.dev/) — the leading property-based testing library for TypeScript/JavaScript.
-
-**Runner**: Vitest (configured with `--run` for CI; watch mode for local development).
-
-**Minimum iterations**: 100 per property test (fast-check default).
-
-**Tag format**: Each property test is tagged with a comment:
-```
-// Feature: flow-master-react-frontend, Property N: <property text>
-```
-
-Each correctness property above maps to exactly one property-based test. The tests use fast-check arbitraries to generate:
-- Random `Income[]` / `Expense[]` arrays with varied dates and amounts
-- Random route paths (for routing properties)
-- Random integer values (for modal validation)
-- Random `Period[]` arrays with varied start dates
-
-### Unit / Component Tests
-
-Vitest + React Testing Library for:
-- Login form submission, error display, button disable state
-- Dashboard loading indicators and empty states
-- Modal open/close/dismiss behavior
-- Admin inline-edit save/cancel flow
-- NavBar logout action
-- `ProtectedRoute` redirect behavior (example-based)
-
-### Integration / Smoke Tests
-
-- Axios interceptor wiring (request header, 401 handling)
-- `server.js` HTTPS redirect middleware
-- `server.js` SPA fallback catch-all
-- Build-time env var check (`scripts/check-env.js`)
-- `VITE_API_BASE_URL` usage in `api/client.ts` (no hardcoded URLs)
+- **Property-based tests**: fast-check, minimum 100 iterations per property
+- **Component tests**: Vitest + React Testing Library
+- **Integration/smoke tests**: Axios interceptors, server.js middleware, env var check

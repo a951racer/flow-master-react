@@ -40,7 +40,7 @@ export const NavBar: React.FC = () => {
                 : 'text-gray-300 hover:text-white'
             }
           >
-            Periods
+            Flow
           </NavLink>
           <NavLink
             to="/expenses"

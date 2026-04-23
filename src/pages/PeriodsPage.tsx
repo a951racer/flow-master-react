@@ -100,7 +100,7 @@ export const PeriodsPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="p-6">
-        <h1 className="text-3xl font-bold mb-6">Periods</h1>
+        <h1 className="text-3xl font-bold mb-6">Flow</h1>
         <LoadingSpinner />
       </div>
     );
@@ -109,7 +109,7 @@ export const PeriodsPage: React.FC = () => {
   if (!periods || periods.length === 0) {
     return (
       <div className="p-6">
-        <h1 className="text-3xl font-bold mb-6">Periods</h1>
+        <h1 className="text-3xl font-bold mb-6">Flow</h1>
         <p className="text-gray-500">No active periods available</p>
       </div>
     );
@@ -122,7 +122,7 @@ export const PeriodsPage: React.FC = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">Periods</h1>
+      <h1 className="text-3xl font-bold mb-6">Flow</h1>
       
       {/* Horizontally scrollable container */}
       <div className="overflow-x-auto">
