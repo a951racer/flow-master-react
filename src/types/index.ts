@@ -11,23 +11,33 @@ export interface Period {
 }
 
 export interface Income {
-  id: number;
-  name: string;
+  id: string;
+  name: string;        // mapped from source
+  source: string;
   amount: number;
   scheduledDate: string;  // ISO 8601
   dayOfMonth: number;
-  periodId: number;
+  periodId?: string;
+  isPaycheck: boolean;
+  inactive: boolean;
+  inactiveDate?: string;
 }
 
 export interface Expense {
-  id: number;
-  name: string;
+  id: string;
+  name: string;        // mapped from payee
+  payee: string;
   amount: number;
   dueDate: string;        // ISO 8601
   dayOfMonth: number;
-  periodId: number;
-  categoryId?: number;
-  paymentSourceId?: number;
+  periodId?: string;
+  categoryId: string;
+  paymentSourceId: string;
+  type: 'expense' | 'debt' | 'bill';
+  payeeUrl?: string;
+  required: boolean;
+  inactive: boolean;
+  inactiveDate?: string;
 }
 
 export interface ExpenseCategory {
