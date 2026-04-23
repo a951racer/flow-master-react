@@ -194,6 +194,7 @@ Renders `<NavBar />` and `<Outlet />`. Also renders `<NotificationBanner />` at 
 - Create functionality: input field and "Add" button below each table (Expense Categories and Payment Sources only)
 - Delete functionality: red "Delete" button with confirmation dialog for each row (Expense Categories and Payment Sources only)
 - Rows sorted alphabetically by name using case-insensitive `localeCompare`
+- Users table: read-only display fetched from `GET /users`, columns: First Name, Last Name, Email, sorted by last name then first name. No create/edit/delete (backend only exposes a read endpoint)
 
 ---
 
@@ -245,9 +246,10 @@ export interface PaymentSource {
 }
 
 export interface User {
-  id: number;
-  username: string;
-  email?: string;
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
 }
 
 export interface Notification {

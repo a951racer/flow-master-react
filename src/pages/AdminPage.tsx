@@ -9,7 +9,6 @@ import {
   useUpdatePaymentSource,
   useDeletePaymentSource,
   useUsers,
-  useUpdateUser,
 } from '../api/admin';
 import { useNotificationStore } from '../store/notificationStore';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
@@ -77,7 +76,7 @@ export const AdminPage: React.FC = () => {
         ) : usersQuery.data && usersQuery.data.length > 0 ? (
           <UserTable users={usersQuery.data} />
         ) : (
-          <p className="text-gray-500">User management endpoint not yet implemented</p>
+          <p className="text-gray-500">No users found</p>
         )}
       </section>
     </div>
@@ -415,118 +414,30 @@ interface UserTableProps {
 }
 
 const UserTable: React.FC<UserTableProps> = ({ users }) => {
-  // Sort users alphabetically by username
-  const sortedUsers = [...users].sort((a, b) => 
-    a.username.localeCompare(b.username, undefined, { sensitivity: 'base' })
+  // Sort users alphabetically by last name, then first name
+  const sortedUsers = [...users].sort((a, b) =>
+    a.lastName.localeCompare(b.lastName, undefined, { sensitivity: 'base' }) ||
+    a.firstName.localeCompare(b.firstName, undefined, { sensitivity: 'base' })
   );
 
   return (
     <table className="w-full border-collapse">
       <thead>
         <tr className="border-b">
-          <th className="text-left p-2">Username</th>
+          <th className="text-left p-2">First Name</th>
+          <th className="text-left p-2">Last Name</th>
           <th className="text-left p-2">Email</th>
-          <th className="text-right p-2">Actions</th>
         </tr>
       </thead>
       <tbody>
         {sortedUsers.map(user => (
-          <UserRow key={user.id} user={user} />
+          <tr key={user.id} className="border-b hover:bg-gray-50">
+            <td className="p-2 text-left">{user.firstName}</td>
+            <td className="p-2 text-left">{user.lastName}</td>
+            <td className="p-2 text-left text-gray-600">{user.email}</td>
+          </tr>
         ))}
       </tbody>
     </table>
-  );
-};
-
-interface UserRowProps {
-  user: User;
-}
-
-const UserRow: React.FC<UserRowProps> = ({ user }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedUsername, setEditedUsername] = useState(user.username);
-  const [editedEmail, setEditedEmail] = useState(user.email ?? '');
-  const updateMutation = useUpdateUser();
-  const addNotification = useNotificationStore(s => s.add);
-
-  const handleSave = () => {
-    updateMutation.mutate(
-      { ...user, username: editedUsername, email: editedEmail || undefined },
-      {
-        onSuccess: () => {
-          setIsEditing(false);
-        },
-        onError: () => {
-          addNotification('Failed to update user');
-          setEditedUsername(user.username); // Rollback local state
-          setEditedEmail(user.email ?? '');
-        },
-      }
-    );
-  };
-
-  const handleCancel = () => {
-    setEditedUsername(user.username);
-    setEditedEmail(user.email ?? '');
-    setIsEditing(false);
-  };
-
-  return (
-    <tr className="border-b hover:bg-gray-50">
-      <td className="p-2 text-left">
-        {isEditing ? (
-          <input
-            type="text"
-            value={editedUsername}
-            onChange={e => setEditedUsername(e.target.value)}
-            className="border rounded px-2 py-1 w-full"
-          />
-        ) : (
-          <span>{user.username}</span>
-        )}
-      </td>
-      <td className="p-2 text-left">
-        {isEditing ? (
-          <input
-            type="email"
-            value={editedEmail}
-            onChange={e => setEditedEmail(e.target.value)}
-            className="border rounded px-2 py-1 w-full"
-            placeholder="(optional)"
-          />
-        ) : (
-          <span className="text-gray-600">{user.email ?? '—'}</span>
-        )}
-      </td>
-      <td className="p-2">
-        {isEditing ? (
-          <div className="flex gap-2 justify-end">
-            <button
-              onClick={handleSave}
-              disabled={updateMutation.isPending}
-              className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-            >
-              Save
-            </button>
-            <button
-              onClick={handleCancel}
-              disabled={updateMutation.isPending}
-              className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:opacity-50"
-            >
-              Cancel
-            </button>
-          </div>
-        ) : (
-          <div className="flex justify-end">
-            <button
-              onClick={() => setIsEditing(true)}
-              className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              Edit
-            </button>
-          </div>
-        )}
-      </td>
-    </tr>
   );
 };
