@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { AppShell } from './components/layout/AppShell';
-import { LoginPage, DashboardPage, PeriodsPage, ExpensesPage, AdminPage } from './pages';
+import { LoginPage, DashboardPage, PeriodsPage, ExpensesPage, IncomePage, AdminPage } from './pages';
 
 function App() {
   return (
@@ -13,6 +13,7 @@ function App() {
             <Route path="/" element={<DashboardPage />} />
             <Route path="/periods" element={<PeriodsPage />} />
             <Route path="/expenses" element={<ExpensesPage />} />
+            <Route path="/income" element={<IncomePage />} />
             <Route path="/admin" element={<AdminPage />} />
           </Route>
         </Route>

@@ -11,12 +11,16 @@ export interface Period {
 }
 
 export interface Income {
-  id: number;
-  name: string;
+  id: string;
+  name: string;        // mapped from source
+  source: string;
   amount: number;
   scheduledDate: string;  // ISO 8601
   dayOfMonth: number;
-  periodId: number;
+  periodId?: string;
+  isPaycheck: boolean;
+  inactive: boolean;
+  inactiveDate?: string;
 }
 
 export interface Expense {
