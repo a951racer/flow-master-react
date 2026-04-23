@@ -16,19 +16,28 @@ export function useCurrentPeriod() {
   return useQuery({
     queryKey: queryKeys.currentPeriod,
     queryFn: async () => {
-      const response = await apiClient.get<{ data: Period[]; count: number }>('periods');
-      const periods = response.data.data;
-      
-      // Find current period: end date >= today, earliest start date
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      const activePeriods = periods.filter(p => new Date(p.endDate) >= today);
-      if (activePeriods.length === 0) return null;
-      
-      // Sort by start date and return the earliest
-      activePeriods.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-      return activePeriods[0];
+      try {
+        const response = await apiClient.get<{ data: Period[]; count: number }>('periods');
+        const periods = response.data.data;
+        
+        if (!periods || !Array.isArray(periods)) {
+          return null;
+        }
+        
+        // Find current period: end date >= today, earliest start date
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const activePeriods = periods.filter(p => new Date(p.endDate) >= today);
+        if (activePeriods.length === 0) return null;
+        
+        // Sort by start date and return the earliest
+        activePeriods.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+        return activePeriods[0];
+      } catch (error) {
+        console.error('Error fetching current period:', error);
+        throw error;
+      }
     },
   });
 }
