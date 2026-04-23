@@ -43,6 +43,16 @@ export const NavBar: React.FC = () => {
             Periods
           </NavLink>
           <NavLink
+            to="/expenses"
+            className={({ isActive }) =>
+              isActive
+                ? 'text-blue-400 font-semibold'
+                : 'text-gray-300 hover:text-white'
+            }
+          >
+            Expenses
+          </NavLink>
+          <NavLink
             to="/admin"
             className={({ isActive }) =>
               isActive
