@@ -53,6 +53,8 @@ The React build output (`/build`) is committed to the repository (or produced by
 ```
 flow-master-react/
 ├── public/
+│   ├── logo.png          # Flow Master logo (used in navbar)
+│   └── favicon.png       # Browser tab icon
 ├── src/
 │   ├── api/              # Axios instance + per-resource query hooks
 │   │   ├── client.ts     # Configured Axios instance
@@ -131,9 +133,11 @@ Renders `<NavBar />` and `<Outlet />`. Also renders `<NotificationBanner />` at 
 
 ### `NavBar`
 
+- Logo: Displays the Flow Master logo (86x86px) on the left side of the navigation bar with `object-contain` to maintain aspect ratio
 - Links: Dashboard (`/`), Periods (`/periods`), Admin (`/admin`)
 - Uses `useMatch` / `NavLink` `isActive` to highlight the active route
 - Logout button calls `authStore.clearToken()` then `navigate('/login')`
+- Compact vertical padding (`py-1`) to minimize nav bar height while accommodating the logo
 
 ### `NotificationBanner`
 
@@ -177,16 +181,19 @@ Renders `<NavBar />` and `<Outlet />`. Also renders `<NotificationBanner />` at 
 - Props: `period: Period` (with `incomes: Income[]`, `expenses: Expense[]`)
 - Header: date range
 - Summary section: total income, total expenses, difference (computed client-side)
-- Income list: sorted ascending by `dayOfMonth`
-- Expense list: sorted ascending by `dayOfMonth`
+- Income list: sorted ascending by `dayOfMonth`, displays name, day of month, and amount in horizontal layout
+- Expense list: sorted ascending by `dayOfMonth`, displays name, day of month, and amount in horizontal layout
 
 ### `AdminPage`
 
 - Three sections: Expense Categories, Payment Sources, Users
 - Each section uses an inline-edit table pattern:
-  - Display mode: read-only row
+  - Display mode: read-only row with name (left-aligned) and action buttons (right-aligned)
   - Edit mode: input fields + Save/Cancel buttons
   - On save: fires mutation; on success updates cache; on error shows notification and reverts to previous value (optimistic update with rollback via TanStack Query's `onMutate`/`onError` pattern)
+- Create functionality: input field and "Add" button below each table (Expense Categories and Payment Sources only)
+- Delete functionality: red "Delete" button with confirmation dialog for each row (Expense Categories and Payment Sources only)
+- Rows sorted alphabetically by name using case-insensitive `localeCompare`
 
 ---
 
@@ -589,7 +596,7 @@ Called from `package.json`:
 
 ### Property 15: Period income entry rendering completeness
 
-*For any* `Income` object rendered in a `PeriodColumn`, the rendered output SHALL contain both the income's `name` and its `amount`.
+*For any* `Income` object rendered in a `PeriodColumn`, the rendered output SHALL contain the income's `name`, `dayOfMonth`, and `amount` in a horizontal layout.
 
 **Validates: Requirements 9.3**
 
@@ -597,7 +604,7 @@ Called from `package.json`:
 
 ### Property 16: Period expense entry rendering completeness
 
-*For any* `Expense` object rendered in a `PeriodColumn`, the rendered output SHALL contain both the expense's `name` and its `amount`.
+*For any* `Expense` object rendered in a `PeriodColumn`, the rendered output SHALL contain the expense's `name`, `dayOfMonth`, and `amount` in a horizontal layout.
 
 **Validates: Requirements 9.4**
 
