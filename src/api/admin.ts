@@ -160,43 +160,18 @@ export function useDeletePaymentSource() {
 }
 
 // ── Users ─────────────────────────────────────────────────────────────────────
-// Note: Users endpoint doesn't exist in the backend yet
-// Returning empty array for now to prevent errors
 
 export function useUsers() {
   return useQuery({
     queryKey: queryKeys.users,
     queryFn: async () => {
-      // TODO: Backend doesn't have a users endpoint yet
-      // Return empty array to prevent errors
-      return [] as User[];
-    },
-  });
-}
-
-export function useUpdateUser() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (user: User) => {
-      // TODO: Backend doesn't have a users endpoint yet
-      // Return the user as-is for now
-      return user;
-    },
-    onMutate: async (updated) => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.users });
-      const previous = queryClient.getQueryData<User[]>(queryKeys.users);
-      queryClient.setQueryData<User[]>(queryKeys.users, old =>
-        old?.map(u => (u.id === updated.id ? updated : u)) ?? []
-      );
-      return { previous };
-    },
-    onError: (_err, _updated, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(queryKeys.users, context.previous);
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.users });
+      const response = await apiClient.get<{ data: any[]; count: number }>('users');
+      return response.data.data.map((item: any) => ({
+        id: item._id,
+        firstName: item.firstName,
+        lastName: item.lastName,
+        email: item.email,
+      })) as User[];
     },
   });
 }
