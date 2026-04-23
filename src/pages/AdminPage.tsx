@@ -42,7 +42,7 @@ export const AdminPage: React.FC = () => {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Admin Panel</h1>
+      <h1 className="text-3xl font-bold mb-6">Admin</h1>
 
       {/* Expense Categories Section */}
       <section className="mb-8 p-4 bg-white rounded-lg shadow">
@@ -227,7 +227,8 @@ const ExpenseCategoryRow: React.FC<ExpenseCategoryRowProps> = ({ category }) => 
           <div className="flex gap-2 justify-end">
             <button
               onClick={() => setIsEditing(true)}
-              className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="px-3 py-1 text-white rounded"
+              style={{ backgroundColor: '#2F6FB5' }}
             >
               Edit
             </button>
@@ -389,7 +390,8 @@ const PaymentSourceRow: React.FC<PaymentSourceRowProps> = ({ source }) => {
           <div className="flex gap-2 justify-end">
             <button
               onClick={() => setIsEditing(true)}
-              className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="px-3 py-1 text-white rounded"
+              style={{ backgroundColor: '#2F6FB5' }}
             >
               Edit
             </button>

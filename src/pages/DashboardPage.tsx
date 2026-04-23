@@ -40,7 +40,8 @@ export const DashboardPage: React.FC = () => {
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          className="px-4 py-2 text-white rounded"
+          style={{ backgroundColor: '#2F6FB5' }}
         >
           Create Periods
         </button>

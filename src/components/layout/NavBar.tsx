@@ -11,7 +11,7 @@ export const NavBar: React.FC = () => {
   };
 
   return (
-    <nav className="bg-gray-800 text-white px-6 py-1">
+    <nav className="text-white px-6 py-1" style={{ backgroundColor: '#0F2E5D' }}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-6">
           {/* Logo */}
@@ -55,7 +55,10 @@ export const NavBar: React.FC = () => {
         </div>
         <button
           onClick={handleLogout}
-          className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded"
+          className="px-4 py-2 rounded text-white font-medium"
+          style={{ backgroundColor: '#5FA343' }}
+          onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#4e8a38')}
+          onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#5FA343')}
         >
           Logout
         </button>
