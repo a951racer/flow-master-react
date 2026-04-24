@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAllExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense } from '../api/expenses';
 import { useExpenseCategories, usePaymentSources } from '../api/admin';
 import { useNotificationStore } from '../store/notificationStore';
+import { formatCurrency } from '../utils/dateUtils';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import type { Expense } from '../types';
 
@@ -217,7 +218,7 @@ const ExpenseRow: React.FC<ExpenseRowProps> = ({ expense, categories, paymentSou
       <td className="p-3 text-left capitalize">{expense.type}</td>
       <td className="p-3 text-left">{categoryName}</td>
       <td className="p-3 text-left">{sourceName}</td>
-      <td className="p-3 text-right">${expense.amount.toFixed(2)}</td>
+      <td className="p-3 text-right">{formatCurrency(expense.amount)}</td>
       <td className="p-3 text-center">{expense.dayOfMonth}</td>
       <td className="p-3 text-center">{expense.required ? '✓' : '—'}</td>
       <td className="p-3 text-center">{expense.inactive ? '✓' : '—'}</td>

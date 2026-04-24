@@ -5,7 +5,7 @@ import { useUpcomingExpenses } from '../api/expenses';
 import { usePaymentSources } from '../api/admin';
 import { useNotificationStore } from '../store/notificationStore';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
-import { formatDate, nextOccurrenceFromDayOfMonth } from '../utils/dateUtils';
+import { formatDate, nextOccurrenceFromDayOfMonth, formatCurrency } from '../utils/dateUtils';
 
 export const DashboardPage: React.FC = () => {
   const addNotification = useNotificationStore(s => s.add);
@@ -65,7 +65,7 @@ export const DashboardPage: React.FC = () => {
               <li key={income.id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
                 <span className="font-medium">{income.name}</span>
                 <span className="text-gray-500 text-sm">{nextOccurrenceFromDayOfMonth(income.dayOfMonth)}</span>
-                <span className="font-medium text-green-600">${income.amount.toFixed(2)}</span>
+                <span className="font-medium text-green-600">{formatCurrency(income.amount)}</span>
               </li>
             ))}
           </ul>
@@ -88,7 +88,7 @@ export const DashboardPage: React.FC = () => {
                   <span className="font-medium">{expense.name}</span>
                   <span className="text-gray-500 text-sm">{sourceName}</span>
                   <span className="text-gray-500 text-sm">{nextOccurrenceFromDayOfMonth(expense.dayOfMonth)}</span>
-                  <span className="font-medium text-red-600">${expense.amount.toFixed(2)}</span>
+                  <span className="font-medium text-red-600">{formatCurrency(expense.amount)}</span>
                 </li>
               );
             })}

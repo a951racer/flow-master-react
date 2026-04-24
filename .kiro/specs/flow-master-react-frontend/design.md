@@ -85,7 +85,7 @@ flow-master-react/
 │   │   ├── IncomePage.tsx
 │   │   └── AdminPage.tsx
 │   ├── utils/
-│   │   └── dateUtils.ts  # formatDate, isWithinNextDays, isDayOfMonthWithinNextDays, nextOccurrenceFromDayOfMonth
+│   │   └── dateUtils.ts  # formatDate, isWithinNextDays, isDayOfMonthWithinNextDays, nextOccurrenceFromDayOfMonth, formatCurrency
 │   ├── types/
 │   │   └── index.ts
 │   ├── App.tsx
