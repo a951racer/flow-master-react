@@ -102,7 +102,7 @@
 - 10.1 The app content width SHALL be 75% of the browser window, centered
 - 10.2 Edit buttons throughout the app SHALL use color `#2F6FB5`
 - 10.3 Add/Create buttons throughout the app SHALL use color `#5FA343`
-- 10.4 All pages SHALL use a light gray background (`bg-gray-50`)
+- 10.4 All authenticated pages SHALL display `app-bg.png` as a fixed background wallpaper
 
 ## 11. Error Handling and Notifications
 

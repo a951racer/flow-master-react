@@ -54,6 +54,7 @@ flow-master-react/
 │   ├── logo.png          # Navbar logo (86x86px)
 │   ├── login-logo.png    # Login panel logo (full panel width)
 │   ├── login-bg.png      # Login page background image
+│   ├── app-bg.png        # Authenticated pages background wallpaper
 │   └── favicon.png       # Browser tab icon
 ├── src/
 │   ├── api/
@@ -122,7 +123,7 @@ flow-master-react/
 
 ### `AppShell`
 
-Renders `<NavBar />`, `<NotificationBanner />`, and `<Outlet />`. The main content area uses `w-full` with no container constraint — width is controlled by `#root` in `index.css` (75% of browser window, centered).
+Renders `<NavBar />`, `<NotificationBanner />`, and `<Outlet />`. The main content area uses `w-full` with no container constraint — width is controlled by `#root` in `index.css` (75% of browser window, centered). Background: `app-bg.png` tiled (`backgroundRepeat: repeat`, `backgroundSize: auto`, `backgroundAttachment: fixed`).
 
 ### `NavBar`
 
