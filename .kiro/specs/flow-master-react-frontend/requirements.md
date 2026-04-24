@@ -38,11 +38,11 @@
 - 4.3 The dashboard SHALL display expenses due within the next 3 days
 - 4.4 Each section SHALL show a loading indicator while data is being fetched
 - 4.5 Failed fetches SHALL display a notification; other sections SHALL continue to render
-- 4.6 The dashboard SHALL include a "Create Periods" button (`#2F6FB5`) that opens a modal
+- 4.6 The dashboard SHALL NOT include a "Create Periods" button (moved to Flow page)
 
 ## 5. Create Periods Modal
 
-- 5.1 The modal SHALL accept a count between 1 and 12
+- 5.1 The modal SHALL be accessible from the Flow page via a "Create Periods" button (`#2F6FB5`)
 - 5.2 The submit button SHALL be disabled for values outside [1, 12] or non-integers
 - 5.3 On success, the modal SHALL close and dashboard data SHALL refresh
 - 5.4 On failure, a notification SHALL appear inside the modal and it SHALL remain open
@@ -50,9 +50,11 @@
 ## 6. Flow Page (Periods)
 
 - 6.1 The page title SHALL be "Flow"
-- 6.2 The page SHALL display active periods as horizontally scrollable columns
-- 6.3 Columns SHALL be ordered by `startDate` ascending (oldest left, newest right)
-- 6.4 Each column SHALL show the period date range, total income, total expenses, and difference
+- 6.2 The page SHALL include a "Create Periods" button (`#2F6FB5`) that opens the Create Periods modal
+- 6.3 The page SHALL display active periods as horizontally scrollable columns
+- 6.4 Columns SHALL be ordered by `startDate` ascending (oldest left, newest right)
+- 6.5 Each column header SHALL display only the period start date
+- 6.6 Each column SHALL show total income, total expenses, and difference
 - 6.5 Each column SHALL list incomes sorted ascending by day of month
 - 6.6 Each column SHALL list expenses sorted ascending by day of month
 - 6.7 Each income/expense row SHALL display: name | day of month | amount

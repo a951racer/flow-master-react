@@ -143,14 +143,15 @@ Renders `<NavBar />`, `<NotificationBanner />`, and `<Outlet />`. The main conte
 
 ### `DashboardPage`
 
-- "Create Periods" button: `#2F6FB5`
 - Three sections: Current Period, Upcoming Incomes (next 3 days), Upcoming Expenses (next 3 days)
 - Client-side filtering for upcoming items
+- No "Create Periods" button (moved to PeriodsPage)
 
 ### `PeriodsPage` (titled "Flow")
 
+- "Create Periods" button (`#2F6FB5`) in the page header opens `<CreatePeriodsModal />`
 - Horizontally scrollable period columns
-- Each `PeriodColumn`: date range header, income/expense summary, sorted income list, sorted expense list
+- Each `PeriodColumn`: start date only as header, income/expense summary, sorted income list, sorted expense list
 - Each income/expense row: name | day of month | amount (horizontal layout)
 
 ### `ExpensesPage`
