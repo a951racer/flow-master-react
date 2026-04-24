@@ -28,7 +28,7 @@ const PeriodColumn: React.FC<PeriodColumnProps> = ({ period }) => {
     <div className="flex-shrink-0 w-80 bg-white rounded-lg shadow p-4">
       {/* Header: Date Range */}
       <h3 className="text-lg font-semibold mb-4 text-gray-800">
-        {formatDate(period.startDate)} - {formatDate(period.endDate)}
+        {formatDate(period.startDate)}
       </h3>
 
       {/* Summary Section */}
