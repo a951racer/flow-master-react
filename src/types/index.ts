@@ -3,11 +3,31 @@ export interface AuthResponse {
 }
 
 export interface Period {
-  id: number;
-  startDate: string;   // ISO 8601 date string
+  id: string;
+  startDate: string;
   endDate: string;
-  incomes?: Income[];
-  expenses?: Expense[];
+  incomes?: PeriodIncomeEntry[];
+  expenses?: PeriodExpenseEntry[];
+}
+
+export interface PeriodIncomeEntry {
+  incomeId: string;
+  name: string;
+  amount: number;
+  dayOfMonth: number;
+  isReceived: boolean;
+  overrideAmount?: number;
+}
+
+export interface PeriodExpenseEntry {
+  expenseId: string;
+  name: string;
+  amount: number;
+  dayOfMonth: number;
+  status: 'Unpaid' | 'Paid' | 'Deferred';
+  overrideAmount?: number;
+  paymentSourceId?: string;
+  isCarryOver?: boolean;  // true if this entry was deferred from a previous period
 }
 
 export interface Income {

@@ -57,10 +57,23 @@
 - 6.3 The page SHALL display active periods as horizontally scrollable columns
 - 6.4 Columns SHALL be ordered by `startDate` ascending (oldest left, newest right)
 - 6.5 Each column header SHALL display only the period start date
-- 6.6 Each column SHALL show total income, total expenses, and difference
-- 6.5 Each column SHALL list incomes sorted ascending by day of month
-- 6.6 Each column SHALL list expenses sorted ascending by day of month
-- 6.7 Each income/expense row SHALL display: name | day of month | amount
+- 6.6 Each column SHALL show total income, total expenses (deferred expenses contribute $0), and difference
+- 6.7 Each column SHALL list incomes sorted ascending by day of month
+- 6.8 Each column SHALL list expenses sorted ascending by day of month
+- 6.9 Each income row SHALL display: name | day of month | amount | `isReceived` checkbox
+- 6.10 Toggling the `isReceived` checkbox SHALL immediately trigger a `PUT /periods/:id` update
+- 6.11 Each expense row SHALL display: name | day | amount (color-coded by status) | pencil icon to open edit dialog (status text SHALL NOT be displayed explicitly)
+- 6.12 Clicking the pencil icon SHALL open a modal dialog with status radio buttons (Unpaid/Paid/Deferred) and an override amount field
+- 6.13 The dialog SHALL have Save and Cancel buttons; Save triggers `PUT /periods/:id`
+- 6.14 The override amount SHALL be a positive number; an error notification SHALL appear if invalid
+- 6.15 Expense amount color SHALL be: gray/black (Unpaid or Paid, no override), blue (has override amount), red (Deferred)
+- 6.16 When status is Deferred, the displayed amount SHALL be $0.00 (red) and hovering SHALL show a tooltip with the original amount
+- 6.17 When an override amount is set, hovering over the amount SHALL show a tooltip with the original amount
+- 6.18 When status is Paid or Deferred, all expense row data (except pencil icon) SHALL be displayed with strikethrough and reduced opacity
+- 6.19 When an expense is set to Deferred, a carry-over entry SHALL appear in the next period (if it exists) showing the original amount in red with a `↩` prefix
+- 6.20 The carry-over entry SHALL be read-only (no pencil icon) and SHALL contribute to the next period's total expenses
+- 6.21 When a deferred expense's status changes away from Deferred, the carry-over SHALL be removed from the next period
+- 6.22 Both the current and next period SHALL be saved to the backend whenever a deferral status change occurs
 
 ## 7. Expenses Page
 

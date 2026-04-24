@@ -154,9 +154,15 @@ Renders `<NavBar />`, `<NotificationBanner />`, and `<Outlet />`. The main conte
 ### `PeriodsPage` (titled "Flow")
 
 - "Create Periods" button (`#2F6FB5`) in the page header opens `<CreatePeriodsModal />`
-- Horizontally scrollable period columns
-- Each `PeriodColumn`: start date only as header, income/expense summary, sorted income list, sorted expense list
-- Each income/expense row: name | day of month | amount (horizontal layout)
+- Horizontally scrollable period columns (`w-96` each)
+- Each `PeriodColumn` maintains local state for incomes and expenses, synced from props
+- Each column: start date header, income/expense summary (using `overrideAmount` if set; deferred expenses contribute $0 to total), sorted income list, sorted expense list
+- Income row: name | day | amount | `isReceived` checkbox — checkbox change immediately calls `useUpdatePeriod`
+- Expense row: name | day | amount (gray=Unpaid/Paid no override, blue=has override with original tooltip, red=Deferred shows $0.00 with original tooltip) | pencil icon. Paid and Deferred rows show strikethrough + reduced opacity on all data except pencil. Status text not displayed (conveyed visually).
+- `ExpenseEditModal`: shows expense name/amount, status radio (Unpaid/Paid/Deferred), override amount input, Save and Cancel buttons. Save triggers `useUpdatePeriod`.
+- `PeriodExpenseEntry` has `isCarryOver?: boolean` flag to distinguish carry-overs from regular expenses
+- Deferred carry-overs: added to next period with `isCarryOver: true`, `status: 'Unpaid'`, original amount, displayed in red with `↩` prefix, no pencil icon
+- Carry-over management handled in `PeriodsPage` via `handleExpenseSave` which updates both current and next period atomically
 
 ### `ExpensesPage`
 
@@ -197,8 +203,27 @@ export interface Period {
   id: string;
   startDate: string;
   endDate: string;
-  incomes?: Income[];
-  expenses?: Expense[];
+  incomes?: PeriodIncomeEntry[];
+  expenses?: PeriodExpenseEntry[];
+}
+
+export interface PeriodIncomeEntry {
+  incomeId: string;
+  name: string;
+  amount: number;
+  dayOfMonth: number;
+  isReceived: boolean;
+  overrideAmount?: number;
+}
+
+export interface PeriodExpenseEntry {
+  expenseId: string;
+  name: string;
+  amount: number;
+  dayOfMonth: number;
+  status: 'Unpaid' | 'Paid' | 'Deferred';
+  overrideAmount?: number;
+  paymentSourceId?: string;
 }
 
 export interface Income {
@@ -299,6 +324,7 @@ const expenseQueryKey = ['allExpenses'];
 | `useCurrentPeriod` | GET | `periods` (client-side filter) |
 | `useActivePeriods` | GET | `periods` (client-side filter) |
 | `useGeneratePeriods` | POST | `periods/generate/:count` |
+| `useUpdatePeriod` | PUT | `periods/:id` |
 | `useAllIncomes` | GET | `incomes` |
 | `useUpcomingIncomes` | GET | `incomes` (client-side filter) |
 | `useCreateIncome` | POST | `incomes` |
