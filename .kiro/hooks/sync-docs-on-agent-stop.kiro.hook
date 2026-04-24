@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Sync Docs After Every Change",
+  "description": "After every agent response, check if any source files were modified and update the requirements and design docs accordingly.",
+  "version": "1",
+  "when": {
+    "type": "agentStop"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Review the changes made in this session. If any pages, API hooks, components, types, routing, or UI behavior were added, modified, or removed, update the affected sections of flow-master-react/.kiro/specs/flow-master-react-frontend/requirements.md and flow-master-react/.kiro/specs/flow-master-react-frontend/design.md to accurately reflect the current state. Only update sections affected by the changes — do not rewrite unrelated sections. If no functional changes were made (e.g. only doc updates), skip this step."
+  }
+}
