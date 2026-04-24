@@ -2,7 +2,9 @@ import React, { useEffect } from 'react';
 import { useActivePeriods } from '../api/periods';
 import { useNotificationStore } from '../store/notificationStore';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import { CreatePeriodsModal } from '../components/modals/CreatePeriodsModal';
 import { formatDate } from '../utils/dateUtils';
+import { useState } from 'react';
 import type { Period } from '../types';
 
 interface PeriodColumnProps {
@@ -88,6 +90,7 @@ const PeriodColumn: React.FC<PeriodColumnProps> = ({ period }) => {
 
 export const PeriodsPage: React.FC = () => {
   const addNotification = useNotificationStore(s => s.add);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { data: periods, isLoading, isError } = useActivePeriods();
 
   // Push notification on fetch error
@@ -122,8 +125,17 @@ export const PeriodsPage: React.FC = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">Flow</h1>
-      
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Flow</h1>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="px-4 py-2 text-white rounded"
+          style={{ backgroundColor: '#2F6FB5' }}
+        >
+          Create Periods
+        </button>
+      </div>
+
       {/* Horizontally scrollable container */}
       <div className="overflow-x-auto">
         <div className="flex gap-4 pb-4">
@@ -132,6 +144,8 @@ export const PeriodsPage: React.FC = () => {
           ))}
         </div>
       </div>
+
+      <CreatePeriodsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 };

@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useCurrentPeriod } from '../api/periods';
 import { useUpcomingIncomes } from '../api/incomes';
 import { useUpcomingExpenses } from '../api/expenses';
 import { useNotificationStore } from '../store/notificationStore';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
-import { CreatePeriodsModal } from '../components/modals/CreatePeriodsModal';
 import { formatDate } from '../utils/dateUtils';
 
 export const DashboardPage: React.FC = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const addNotification = useNotificationStore(s => s.add);
 
   const currentPeriodQuery = useCurrentPeriod();
@@ -38,13 +36,6 @@ export const DashboardPage: React.FC = () => {
     <div className="p-6 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Dashboard</h1>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="px-4 py-2 text-white rounded"
-          style={{ backgroundColor: '#2F6FB5' }}
-        >
-          Create Periods
-        </button>
       </div>
 
       {/* Current Period Section */}
@@ -98,8 +89,6 @@ export const DashboardPage: React.FC = () => {
           <p className="text-gray-500">No upcoming expenses</p>
         )}
       </section>
-
-      <CreatePeriodsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 };
