@@ -94,7 +94,12 @@
 - 9.4 Delete SHALL require confirmation via a dialog
 - 9.5 All tables SHALL be sorted alphabetically by name
 - 9.6 Name columns SHALL be left-aligned; action buttons SHALL be right-aligned
-- 9.7 The Users table SHALL be read-only, displaying First Name, Last Name, Email
+- 9.7 The Users table SHALL support create (via `POST /auth/register`), inline-edit (First Name, Last Name, Email), and delete with confirmation
+- 9.9 The create user form SHALL include First Name, Last Name, Email, and Password fields
+- 9.10 The password field SHALL be masked during entry and SHALL NOT be displayed after the user is saved
+- 9.11 The email field SHALL validate format (must contain `@` and domain) and display an inline error if invalid
+- 9.12 The password field SHALL require a minimum of 8 characters and display an inline error if too short
+- 9.13 The "Add User" button SHALL be disabled until all fields are valid
 - 9.8 Users SHALL be sorted by last name then first name
 
 ## 10. Layout and Appearance

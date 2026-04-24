@@ -175,3 +175,69 @@ export function useUsers() {
     },
   });
 }
+
+export function useCreateUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: { firstName: string; lastName: string; email: string; password: string }) => {
+      const response = await apiClient.post<{ data: any }>('auth/register', data);
+      const item = response.data.data;
+      return {
+        id: item._id,
+        firstName: item.firstName,
+        lastName: item.lastName,
+        email: item.email,
+      } as User;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.users });
+    },
+  });
+}
+
+export function useUpdateUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (user: User) => {
+      const response = await apiClient.put<{ data: any }>(`users/${user.id}`, {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+      });
+      return {
+        id: response.data.data._id,
+        firstName: response.data.data.firstName,
+        lastName: response.data.data.lastName,
+        email: response.data.data.email,
+      } as User;
+    },
+    onMutate: async (updated) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.users });
+      const previous = queryClient.getQueryData<User[]>(queryKeys.users);
+      queryClient.setQueryData<User[]>(queryKeys.users, old =>
+        old?.map(u => (u.id === updated.id ? updated : u)) ?? []
+      );
+      return { previous };
+    },
+    onError: (_err, _updated, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKeys.users, context.previous);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.users });
+    },
+  });
+}
+
+export function useDeleteUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await apiClient.delete(`users/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.users });
+    },
+  });
+}
