@@ -103,6 +103,7 @@
 - 10.2 Edit buttons throughout the app SHALL use color `#2F6FB5`
 - 10.3 Add/Create buttons throughout the app SHALL use color `#5FA343`
 - 10.4 All authenticated pages SHALL display `app-bg.png` as a fixed background wallpaper
+- 10.5 All currency values SHALL be formatted using `formatCurrency()` — producing `$1,234.56` style with commas and two decimal places
 
 ## 11. Error Handling and Notifications
 

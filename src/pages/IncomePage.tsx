@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAllIncomes, useCreateIncome, useUpdateIncome, useDeleteIncome } from '../api/incomes';
 import { useNotificationStore } from '../store/notificationStore';
+import { formatCurrency } from '../utils/dateUtils';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import type { Income } from '../types';
 
@@ -184,7 +185,7 @@ interface IncomeRowProps {
 const IncomeRow: React.FC<IncomeRowProps> = ({ income, onEdit, onDelete, isDeleting }) => (
   <tr className={`border-b hover:bg-gray-50 ${income.inactive ? 'opacity-50' : ''}`}>
     <td className="p-3 text-left font-medium">{income.source}</td>
-    <td className="p-3 text-right">${income.amount.toFixed(2)}</td>
+    <td className="p-3 text-right">{formatCurrency(income.amount)}</td>
     <td className="p-3 text-center">{income.dayOfMonth}</td>
     <td className="p-3 text-center">{income.isPaycheck ? '✓' : '—'}</td>
     <td className="p-3 text-center">{income.inactive ? '✓' : '—'}</td>

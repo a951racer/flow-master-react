@@ -3,7 +3,7 @@ import { useActivePeriods } from '../api/periods';
 import { useNotificationStore } from '../store/notificationStore';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { CreatePeriodsModal } from '../components/modals/CreatePeriodsModal';
-import { formatDate } from '../utils/dateUtils';
+import { formatDate, formatCurrency } from '../utils/dateUtils';
 import { useState } from 'react';
 import type { Period } from '../types';
 
@@ -35,16 +35,16 @@ const PeriodColumn: React.FC<PeriodColumnProps> = ({ period }) => {
       <div className="mb-4 p-3 bg-gray-50 rounded">
         <div className="flex justify-between mb-2">
           <span className="text-sm font-medium text-gray-600">Total Income:</span>
-          <span className="text-sm font-semibold text-green-600">${totalIncome.toFixed(2)}</span>
+          <span className="text-sm font-semibold text-green-600">{formatCurrency(totalIncome)}</span>
         </div>
         <div className="flex justify-between mb-2">
           <span className="text-sm font-medium text-gray-600">Total Expenses:</span>
-          <span className="text-sm font-semibold text-red-600">${totalExpenses.toFixed(2)}</span>
+          <span className="text-sm font-semibold text-red-600">{formatCurrency(totalExpenses)}</span>
         </div>
         <div className="flex justify-between pt-2 border-t border-gray-300">
           <span className="text-sm font-medium text-gray-700">Difference:</span>
           <span className={`text-sm font-bold ${difference >= 0 ? 'text-green-700' : 'text-red-700'}`}>
-            ${difference.toFixed(2)}
+            {formatCurrency(difference)}
           </span>
         </div>
       </div>
@@ -58,7 +58,7 @@ const PeriodColumn: React.FC<PeriodColumnProps> = ({ period }) => {
               <li key={income.id} className="flex justify-between items-center text-sm p-2 bg-green-50 rounded">
                 <span className="font-medium">{income.name}</span>
                 <span className="text-xs text-gray-500 mx-2">{income.dayOfMonth}</span>
-                <span className="text-gray-700">${income.amount.toFixed(2)}</span>
+                <span className="text-gray-700">{formatCurrency(income.amount)}</span>
               </li>
             ))}
           </ul>
@@ -76,7 +76,7 @@ const PeriodColumn: React.FC<PeriodColumnProps> = ({ period }) => {
               <li key={expense.id} className="flex justify-between items-center text-sm p-2 bg-red-50 rounded">
                 <span className="font-medium">{expense.name}</span>
                 <span className="text-xs text-gray-500 mx-2">{expense.dayOfMonth}</span>
-                <span className="text-gray-700">${expense.amount.toFixed(2)}</span>
+                <span className="text-gray-700">{formatCurrency(expense.amount)}</span>
               </li>
             ))}
           </ul>

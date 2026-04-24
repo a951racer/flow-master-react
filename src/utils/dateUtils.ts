@@ -71,3 +71,15 @@ export function nextOccurrenceFromDayOfMonth(dayOfMonth: number): string {
   });
   return formatter.format(target);
 }
+
+/**
+ * Formats a number as a USD currency string with commas (e.g. $1,234.56).
+ */
+export function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
