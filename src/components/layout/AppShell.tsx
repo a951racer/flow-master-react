@@ -4,7 +4,15 @@ import { NotificationBanner } from '../common/NotificationBanner';
 
 export const AppShell: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div
+      className="min-h-screen"
+      style={{
+        backgroundImage: 'url(/app-bg.png)',
+        backgroundRepeat: 'repeat',
+        backgroundSize: 'auto',
+        backgroundAttachment: 'fixed',
+      }}
+    >
       <NavBar />
       <NotificationBanner />
       <main className="w-full px-4 py-6">
