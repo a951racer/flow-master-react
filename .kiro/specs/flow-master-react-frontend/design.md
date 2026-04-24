@@ -181,7 +181,7 @@ Renders `<NavBar />`, `<NotificationBanner />`, and `<Outlet />`. The main conte
 
 - Three sections: Expense Categories, Payment Sources, Users
 - Expense Categories and Payment Sources: inline-edit table with create (Add button) and delete (confirmation dialog)
-- Users: read-only table, columns: First Name, Last Name, Email — fetched from `GET /users`
+- Users: create form (First Name, Last Name, Email, Password — password masked, never displayed after save) via `POST /auth/register`; inline-edit (First Name, Last Name, Email) via `PUT /users/:id`; delete with confirmation via `DELETE /users/:id`. Sorted by last name then first name.
 - All tables sorted alphabetically; name columns left-aligned, action buttons right-aligned
 
 ---
@@ -318,6 +318,9 @@ const expenseQueryKey = ['allExpenses'];
 | `useUpdatePaymentSource` | PUT | `payment-sources/:id` |
 | `useDeletePaymentSource` | DELETE | `payment-sources/:id` |
 | `useUsers` | GET | `users` |
+| `useCreateUser` | POST | `auth/register` |
+| `useUpdateUser` | PUT | `users/:id` |
+| `useDeleteUser` | DELETE | `users/:id` |
 
 ---
 
