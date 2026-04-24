@@ -39,6 +39,9 @@
 - 4.4 Each section SHALL show a loading indicator while data is being fetched
 - 4.5 Failed fetches SHALL display a notification; other sections SHALL continue to render
 - 4.6 The dashboard SHALL NOT include a "Create Periods" button (moved to Flow page)
+- 4.7 Each upcoming income row SHALL display: name, calculated next occurrence date, and amount (green)
+- 4.8 Each upcoming expense row SHALL display: name, payment source, calculated next occurrence date, and amount (red)
+- 4.9 The next occurrence date SHALL be calculated from the item's `dayOfMonth` — if that day is today or later this month, show this month's date; otherwise show next month's date
 
 ## 5. Create Periods Modal
 
