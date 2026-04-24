@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from './client';
 import { queryKeys } from './periods';
 import type { Income } from '../types';
-import { isWithinNextDays } from '../utils/dateUtils';
+import { isWithinNextDays, isDayOfMonthWithinNextDays } from '../utils/dateUtils';
 
 const incomeQueryKey = ['allIncomes'] as const;
 
@@ -102,7 +102,7 @@ export function useUpcomingIncomes() {
         if (!incomes || !Array.isArray(incomes)) return [];
         return incomes
           .map(transformIncome)
-          .filter((i) => isWithinNextDays(i.scheduledDate, 3));
+          .filter((i) => isDayOfMonthWithinNextDays(i.dayOfMonth, 3));
       } catch (error) {
         console.error('Error fetching upcoming incomes:', error);
         throw error;

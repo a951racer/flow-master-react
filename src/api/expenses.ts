@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from './client';
 import { queryKeys } from './periods';
 import type { Expense } from '../types';
-import { isWithinNextDays } from '../utils/dateUtils';
+import { isWithinNextDays, isDayOfMonthWithinNextDays } from '../utils/dateUtils';
 
 const expenseQueryKey = ['allExpenses'] as const;
 
@@ -114,7 +114,7 @@ export function useUpcomingExpenses() {
         if (!expenses || !Array.isArray(expenses)) return [];
         return expenses
           .map(transformExpense)
-          .filter((e) => isWithinNextDays(e.dueDate, 3));
+          .filter((e) => isDayOfMonthWithinNextDays(e.dayOfMonth, 3));
       } catch (error) {
         console.error('Error fetching upcoming expenses:', error);
         throw error;

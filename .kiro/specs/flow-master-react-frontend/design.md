@@ -84,7 +84,7 @@ flow-master-react/
 │   │   ├── IncomePage.tsx
 │   │   └── AdminPage.tsx
 │   ├── utils/
-│   │   └── dateUtils.ts
+│   │   └── dateUtils.ts  # formatDate, isWithinNextDays, isDayOfMonthWithinNextDays, nextOccurrenceFromDayOfMonth
 │   ├── types/
 │   │   └── index.ts
 │   ├── App.tsx
@@ -144,8 +144,11 @@ Renders `<NavBar />`, `<NotificationBanner />`, and `<Outlet />`. The main conte
 ### `DashboardPage`
 
 - Three sections: Current Period, Upcoming Incomes (next 3 days), Upcoming Expenses (next 3 days)
-- Client-side filtering for upcoming items
-- No "Create Periods" button (moved to PeriodsPage)
+- Upcoming items filtered client-side using `isDayOfMonthWithinNextDays(dayOfMonth, 3)` — incomes and expenses are recurring monthly records with no stored date, only `dayOfMonth`
+- Each upcoming income row: name | calculated next occurrence date (green amount)
+- Each upcoming expense row: name | payment source name | calculated next occurrence date | amount (red)
+- Next occurrence date computed via `nextOccurrenceFromDayOfMonth(dayOfMonth)` in `dateUtils.ts`
+- Payment sources fetched via `usePaymentSources()` and looked up by `paymentSourceId`
 
 ### `PeriodsPage` (titled "Flow")
 
